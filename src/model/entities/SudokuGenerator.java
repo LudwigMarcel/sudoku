@@ -12,6 +12,10 @@ public class SudokuGenerator {
 		board = new int[size][size];
 		generateBoard();
 	}
+	
+	public int[][] getBoard(){
+		return board;
+	}
 
 	public void generateBoard() {
 		fillDiagonal(); // preencher as diagonais
@@ -119,7 +123,7 @@ public class SudokuGenerator {
 		return true;
 	}
 
-	// 
+	// pega 20 locais aleatorios e seta o valor em 0, no fim retorna o tabuleiro montado
 	private void removeDigits() {
 		int count = 20;
 		while(count != 0) {
@@ -135,9 +139,5 @@ public class SudokuGenerator {
 				board[i][j] = 0;
 			}
 		}
-	}
-	
-	public int[][] getBoard(){
-		return board;
 	}
 }
