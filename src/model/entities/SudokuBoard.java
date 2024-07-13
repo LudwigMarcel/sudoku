@@ -23,7 +23,7 @@ public class SudokuBoard {
 	public void generateBoard() {
 		fillDiagonal(); // preencher as diagonais
 		fillRemaining(0, 3); // preenche o restante do tabuleiro
-		removeDigits(); // remove num de posição aleatoria
+		removeDigits(0); // remove num de posição aleatoria
 	}
 
 	// itera na diagonal e preenche o box
@@ -94,8 +94,8 @@ public class SudokuBoard {
 
 	// pega 20 locais aleatorios e seta o valor em 0, no fim retorna o tabuleiro
 	// montado
-	private void removeDigits() {
-		int count = 2;
+	public void removeDigits(int number) {
+		int count = number;
 		while (count != 0) {
 			int cellID = random.nextInt(size * size);
 			int i = cellID / size;

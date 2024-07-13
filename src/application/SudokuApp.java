@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -36,23 +37,55 @@ public class SudokuApp extends Application {
 		Button checkButton = new Button("Verificar");
 		Button hintButton = new Button("Dica");
 		Button solveButton = new Button("Resolver");
+		ComboBox<String> difficultyComboBox = new ComboBox<>();
+		difficultyComboBox.getItems().addAll("Fácil", "Médio", "Difícil");
+		difficultyComboBox.setPromptText("Dificuldade");
 
 		newGameButton.setOnAction(e -> startNewGame());
 		checkButton.setOnAction(e -> checkBoard());
 		hintButton.setOnAction(e -> giveHint());
 		solveButton.setOnAction(e -> solveBoard());
 
-		buttonBox.getChildren().addAll(newGameButton, checkButton, hintButton, solveButton);
+		difficultyComboBox.setOnAction(e -> {
+			String selectedDifficulty = difficultyComboBox.getValue();
+			switch (selectedDifficulty) {
+			case "Fácil":
+				sudokuBoard.generateBoard();
+				sudokuBoard.clearBoard();
+				sudokuBoard.generateBoard();
+				sudokuBoard.removeDigits(20);
+				updateBoard();
+				break;
+			case "Médio":
+				sudokuBoard.generateBoard();
+				sudokuBoard.clearBoard();
+				sudokuBoard.generateBoard();
+				sudokuBoard.removeDigits(35);
+				updateBoard();
+				break;
+			case "Difícil":
+				sudokuBoard.generateBoard();
+				sudokuBoard.clearBoard();
+				sudokuBoard.generateBoard();
+				sudokuBoard.removeDigits(45);
+				updateBoard();
+				break;
+			}
+		});
 
-		VBox vbox = new VBox(10, grid, buttonBox);
+		buttonBox.getChildren().addAll(checkButton, hintButton, solveButton);
+		
+		HBox hbox = new HBox(difficultyComboBox, buttonBox);
+		VBox vbox = new VBox(10, grid, hbox);
 		vbox.setPadding(new Insets(10));
 
-		Scene scene = new Scene(vbox, 400, 500);
+		Scene scene = new Scene(vbox, 450, 500);
 		primaryStage.setTitle("Sudoku");
 		primaryStage.setResizable(false);
 		primaryStage.setScene(scene);
 		primaryStage.show();
-
+		
+		showMessage("Escolha uma dificuldade para começar!");
 		updateBoard();
 	}
 
@@ -111,23 +144,30 @@ public class SudokuApp extends Application {
 			}
 		}
 		if (isCorrect) {
-			showMessage("Tabuleiro esta correto!");			
+			showMessage("Tabuleiro esta correto!");
 		} else {
 			showMessage("Algo esta errado!");
 		}
 		return isCorrect;
 	}
 
+	// verificar, numero repetido
 	private void giveHint() {
-		int[] hint = solver.getHint(board);
-		if (hint != null) {
-			int row = hint[0];
-			int col = hint[1];
-			int num = hint[2];
-			cells[row][col].setText(String.valueOf(num));
-			cells[row][col].setStyle("-fx-background-color: lightgreen;");
-		} else {
-			showMessage("Nenhuma sugestão disponível.");
+		boolean flag = false;
+		for (int i = 0; i < SIZE && !flag; i++) {
+			for (int j = 0; j < SIZE && !flag; j++) {
+				String text = cells[i][j].getText();
+				if (text.isEmpty()) {
+					for (int num = 1; num <= SIZE; num++) {
+						if (rules.isSafeToPlace(board, i, j, num)) {
+							cells[i][j].setText(String.valueOf(num));
+							cells[i][j].setStyle("-fx-background-color: lightgreen;");
+							flag = true;
+							break;
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -142,9 +182,11 @@ public class SudokuApp extends Application {
 				if (board[i][j] != 0) {
 					cells[i][j].setText(String.valueOf(board[i][j]));
 					cells[i][j].setEditable(false);
+					cells[i][j].setStyle("-fx-background-color: white;");
 				} else {
 					cells[i][j].setText("");
 					cells[i][j].setEditable(true);
+					cells[i][j].setStyle("-fx-background-color: white;");
 				}
 			}
 		}
@@ -152,10 +194,10 @@ public class SudokuApp extends Application {
 
 	private void showMessage(String message) {
 		Stage messageStage = new Stage();
-		VBox vbox = new VBox(10);
-		vbox.setPadding(new Insets(10));
+		VBox vbox = new VBox(20);
+		vbox.setPadding(new Insets(20));
 		vbox.getChildren().add(new Label(message));
-		Scene scene = new Scene(vbox, 200, 100);
+		Scene scene = new Scene(vbox, 250, 70);
 		messageStage.setScene(scene);
 		messageStage.show();
 	}
