@@ -7,9 +7,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.entities.SudokuBoard;
 import model.entities.SudokuRules;
@@ -29,11 +31,11 @@ public class SudokuApp extends Application {
 		solver = new SudokuSolver();
 		rules = new SudokuRules();
 		board = sudokuBoard.getBoard();
-
+		sudokuBoard.removeDigits(20);
+		
 		GridPane grid = createGrid();
 
 		HBox buttonBox = new HBox(10);
-		Button newGameButton = new Button("Novo Jogo");
 		Button checkButton = new Button("Verificar");
 		Button hintButton = new Button("Dica");
 		Button solveButton = new Button("Resolver");
@@ -41,8 +43,8 @@ public class SudokuApp extends Application {
 		difficultyComboBox.getItems().addAll("Fácil", "Médio", "Difícil");
 		difficultyComboBox.setPromptText("Dificuldade");
 
-		newGameButton.setOnAction(e -> startNewGame());
-		checkButton.setOnAction(e -> checkBoard());
+	
+		checkButton.setOnAction(e -> checkBoard(primaryStage));
 		hintButton.setOnAction(e -> giveHint());
 		solveButton.setOnAction(e -> solveBoard());
 
@@ -50,21 +52,18 @@ public class SudokuApp extends Application {
 			String selectedDifficulty = difficultyComboBox.getValue();
 			switch (selectedDifficulty) {
 			case "Fácil":
-				sudokuBoard.generateBoard();
 				sudokuBoard.clearBoard();
 				sudokuBoard.generateBoard();
 				sudokuBoard.removeDigits(20);
 				updateBoard();
 				break;
 			case "Médio":
-				sudokuBoard.generateBoard();
 				sudokuBoard.clearBoard();
 				sudokuBoard.generateBoard();
 				sudokuBoard.removeDigits(35);
 				updateBoard();
 				break;
 			case "Difícil":
-				sudokuBoard.generateBoard();
 				sudokuBoard.clearBoard();
 				sudokuBoard.generateBoard();
 				sudokuBoard.removeDigits(45);
@@ -75,8 +74,8 @@ public class SudokuApp extends Application {
 
 		buttonBox.getChildren().addAll(checkButton, hintButton, solveButton);
 		
-		HBox hbox = new HBox(difficultyComboBox, buttonBox);
-		VBox vbox = new VBox(10, grid, hbox);
+		HBox hbox = new HBox(difficultyComboBox);
+		VBox vbox = new VBox(10,buttonBox, grid, hbox);
 		vbox.setPadding(new Insets(10));
 
 		Scene scene = new Scene(vbox, 450, 500);
@@ -85,7 +84,8 @@ public class SudokuApp extends Application {
 		primaryStage.setScene(scene);
 		primaryStage.show();
 		
-		showMessage("Escolha uma dificuldade para começar!");
+		showMessage("Teste suas habilidades lógicas!\n\nDificuldade padrão 'Fácil'", primaryStage);
+	
 		updateBoard();
 	}
 
@@ -97,7 +97,7 @@ public class SudokuApp extends Application {
 
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
-				TextField cell = new TextField();
+				TextField cell = createNumberTextField();
 				cell.setPrefSize(40, 40);
 				cell.setStyle("-fx-alignment: center;");
 				cells[i][j] = cell;
@@ -107,16 +107,21 @@ public class SudokuApp extends Application {
 
 		return grid;
 	}
+	 private TextField createNumberTextField() {
+	        TextField textField = new TextField();
+	        
+	        // Configuração para aceitar apenas um dígito numérico
+	        textField.setTextFormatter(new TextFormatter<>(change -> {
+	            if (change.getControlNewText().matches("[0-9]?")) {
+	                return change;
+	            }
+	            return null;
+	        }));
+	      
+	        return textField;
+	    }
 
-	// travando o sistema, para de responder
-	private void startNewGame() {
-		sudokuBoard.clearBoard();
-		sudokuBoard.generateBoard();
-		board = sudokuBoard.getBoard();
-		updateBoard();
-	}
-
-	private boolean checkBoard() {
+	private boolean checkBoard(Stage primaryStage) {
 		boolean isCorrect = true;
 		int[][] tempBoard = new int[SIZE][SIZE];
 		for (int i = 0; i < SIZE; i++) {
@@ -144,9 +149,9 @@ public class SudokuApp extends Application {
 			}
 		}
 		if (isCorrect) {
-			showMessage("Tabuleiro esta correto!");
+			showMessage("Tabuleiro esta correto!", primaryStage);
 		} else {
-			showMessage("Algo esta errado!");
+			showMessage("Algo esta errado!", primaryStage);
 		}
 		return isCorrect;
 	}
@@ -192,16 +197,18 @@ public class SudokuApp extends Application {
 		}
 	}
 
-	private void showMessage(String message) {
+	private void showMessage(String message, Stage primaryStage) {
 		Stage messageStage = new Stage();
 		VBox vbox = new VBox(20);
 		vbox.setPadding(new Insets(20));
 		vbox.getChildren().add(new Label(message));
-		Scene scene = new Scene(vbox, 250, 70);
+		Scene scene = new Scene(vbox, 250, 100);
+		messageStage.initOwner(primaryStage);
+		messageStage.initModality(Modality.WINDOW_MODAL);
 		messageStage.setScene(scene);
 		messageStage.show();
 	}
-
+	
 	public static void main(String[] args) {
 		launch(args);
 	}
